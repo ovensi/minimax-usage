@@ -1,0 +1,16 @@
+{
+  "name": "minimax-usage",
+  "version": "1.0.0",
+  "description": "MiniMax token usage plugin for Claude Code",
+  "main": "dist/mcp-server.js",
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "npm run build"
+  },
+  "dependencies": {
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

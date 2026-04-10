@@ -1,0 +1,5 @@
+{
+  "refresh_interval": 60000,
+  "api_host": "https://www.minimaxi.com",
+  "default_model": ""
+}

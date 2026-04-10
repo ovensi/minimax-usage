@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "name_for_human": "MiniMax Token Usage",
+  "name_for_model": "minimax-usage",
+  "description": "Query MiniMax token plan usage (used/remaining) for the current billing period, displayed via MCP tool and HUD status bar.",
+  "mcp_servers": {
+    "minimax-usage": {
+      "command": "node",
+      "args": ["dist/mcp-server.js"],
+      "env": {
+        "MINIMAX_API_KEY": "${MINIMAX_API_KEY}"
+      }
+    }
+  },
+  "settings": [
+    {
+      "name": "refresh_interval",
+      "description": "HUD refresh interval in milliseconds (default: 60000)",
+      "type": "number",
+      "default": 60000
+    },
+    {
+      "name": "api_host",
+      "description": "MiniMax API host",
+      "type": "string",
+      "default": "https://www.minimaxi.com"
+    },
+    {
+      "name": "default_model",
+      "description": "Default model to display in HUD",
+      "type": "string",
+      "default": ""
+    }
+  ],
+  "hud": {
+    "script": "dist/hud.js",
+    "config": {
+      "refresh_interval": "${refresh_interval}",
+      "default_model": "${default_model}"
+    }
+  }
+}
