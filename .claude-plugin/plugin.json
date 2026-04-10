@@ -1,0 +1,16 @@
+{
+  "name": "minimax-usage",
+  "description": "Query MiniMax token plan usage (used/remaining) for the current billing period, displayed via MCP tool and HUD status bar.",
+  "version": "1.0.0",
+  "author": {
+    "name": "ovensi",
+    "url": "https://github.com/ovensi"
+  },
+  "commands": [
+    "./commands/setup.md"
+  ],
+  "homepage": "https://github.com/ovensi/minimax-usage",
+  "repository": "https://github.com/ovensi/minimax-usage",
+  "license": "MIT",
+  "keywords": ["minimax", "token", "usage", "hud", "mcp", "claude-code"]
+}
