@@ -1,7 +1,21 @@
 export interface ModelRemain {
   model_name: string;
+  // Legacy absolute-count fields — kept for backwards compat with older API
+  // responses. Recent responses always return 0 here; the percentile fields
+  // below are now the source of truth.
   current_interval_total_count: number;
   current_interval_usage_count: number;
+  current_weekly_total_count: number;
+  current_weekly_usage_count: number;
+  // Percentile fields actually populated by the current `/remains` endpoint.
+  // Values are *remaining* percentages (0-100), not used percentages.
+  current_interval_remaining_percent: number;
+  current_weekly_remaining_percent: number;
+  current_interval_status: number;
+  current_weekly_status: number;
+  weekly_start_time: number;
+  weekly_end_time: number;
+  weekly_remains_time: number;
   remains_time: number;
   start_time: number;
   end_time: number;

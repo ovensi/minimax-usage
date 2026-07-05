@@ -6,40 +6,46 @@ export interface HudConfig {
   defaultModel?: string;
 }
 
-function formatProgressBar(percent: number, width: number = 20): string {
-  const filled = Math.round((percent / 100) * width);
+const RESET = "\x1b[0m";
+const DIM = "\x1b[2m";
+const GREEN = "\x1b[32m";
+const YELLOW = "\x1b[33m";
+const RED = "\x1b[31m";
+
+function colorFor(usedPercent: number): string {
+  if (usedPercent >= 85) return RED;
+  if (usedPercent >= 70) return YELLOW;
+  return GREEN;
+}
+
+function barFor(usedPercent: number, width: number = 20): string {
+  const filled = Math.round((usedPercent / 100) * width);
   const empty = width - filled;
-  return "[" + "=".repeat(filled) + " ".repeat(empty) + "]";
+  return `${colorFor(usedPercent)}${"█".repeat(filled)}${DIM}${"░".repeat(empty)}${RESET}`;
 }
 
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + "M";
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + "K";
-  }
-  return num.toString();
-}
-
-function formatHudLine(model: ModelRemain): string {
-  const total = model.current_interval_total_count;
-  const remaining = model.current_interval_usage_count;
-  const used = total - remaining;
-  const percent = total === 0 ? 0 : Math.round((used / total) * 100);
-
-  const progressBar = formatProgressBar(percent);
-  const usedStr = formatNumber(used);
-  const totalStr = formatNumber(total);
-  const percentStr = `${percent}%`;
-
-  const seconds = Math.floor(model.remains_time / 1000);
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const timeRemaining = days > 0 ? `${days}d ${hours}h` : `${hours}h ${minutes}m`;
+  return days > 0 ? `${days}d ${hours}h` : `${hours}h ${minutes}m`;
+}
 
-  return `Model: ${model.model_name} | Used: ${usedStr}/${totalStr} ${progressBar} ${percentStr} | Resets in: ${timeRemaining}`;
+function formatHudLine(model: ModelRemain): string {
+  // API now reports remaining percentage rather than absolute counts.
+  // `current_interval_remaining_percent` / `current_weekly_remaining_percent`
+  // express how much quota is LEFT; convert to used% for the bar.
+  const intervalUsed = 100 - (model.current_interval_remaining_percent ?? 100);
+  const weeklyUsed = 100 - (model.current_weekly_remaining_percent ?? 100);
+
+  const lines = [
+    `Model: ${model.model_name}`,
+    `  3h-cycle: ${intervalUsed}%/${100 - intervalUsed}%  ${barFor(intervalUsed)}`,
+    `  Week:     ${weeklyUsed}%/${100 - weeklyUsed}%   ${barFor(weeklyUsed)}`,
+    `  Resets in: ${formatDuration(model.remains_time)} (week: ${formatDuration(model.weekly_remains_time)})`,
+  ];
+  return lines.join("\n");
 }
 
 export async function getHudLine(defaultModel?: string): Promise<string | null> {
