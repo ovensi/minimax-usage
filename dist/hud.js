@@ -33,13 +33,11 @@ function formatHudLine(model) {
     // express how much quota is LEFT; convert to used% for the bar.
     const intervalUsed = 100 - (model.current_interval_remaining_percent ?? 100);
     const weeklyUsed = 100 - (model.current_weekly_remaining_percent ?? 100);
-    const lines = [
-        `Model: ${model.model_name}`,
-        `  3h-cycle: ${intervalUsed}%/${100 - intervalUsed}%  ${barFor(intervalUsed)}`,
-        `  Week:     ${weeklyUsed}%/${100 - weeklyUsed}%   ${barFor(weeklyUsed)}`,
-        `  Resets in: ${formatDuration(model.remains_time)} (week: ${formatDuration(model.weekly_remains_time)})`,
-    ];
-    return lines.join("\n");
+    // Left column for the model name; lines 2+ are indented to align beneath it.
+    const indent = " ".repeat(model.model_name.length + 2);
+    const line1 = `${model.model_name}  3h: ${intervalUsed}%/${100 - intervalUsed}% ${barFor(intervalUsed)}  wk: ${weeklyUsed}%/${100 - weeklyUsed}% ${barFor(weeklyUsed)}`;
+    const line2 = `${indent}⟲ ${formatDuration(model.remains_time)}  (week ⟲ ${formatDuration(model.weekly_remains_time)})`;
+    return [line1, line2].join("\n");
 }
 async function getHudLine(defaultModel) {
     try {
