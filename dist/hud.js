@@ -18,7 +18,12 @@ function colorFor(usedPercent) {
 function barFor(usedPercent, width = 20) {
     const filled = Math.round((usedPercent / 100) * width);
     const empty = width - filled;
-    return `${colorFor(usedPercent)}${"█".repeat(filled)}${DIM}${"░".repeat(empty)}${RESET}`;
+    if ((0, minimax_core_1.terminalSupportsAnsi)()) {
+        // Fancy: full-block filled, light-shade empty, color-coded by usage.
+        return `${colorFor(usedPercent)}${"█".repeat(filled)}${DIM}${"░".repeat(empty)}${RESET}`;
+    }
+    // Plain ASCII fallback for legacy Windows consoles / pipes / NO_COLOR.
+    return `[${"#".repeat(filled)}${"-".repeat(empty)}]`;
 }
 function formatDuration(ms) {
     const seconds = Math.floor(ms / 1000);
@@ -33,10 +38,12 @@ function formatHudLine(model) {
     // express how much quota is LEFT; convert to used% for the bar.
     const intervalUsed = 100 - (model.current_interval_remaining_percent ?? 100);
     const weeklyUsed = 100 - (model.current_weekly_remaining_percent ?? 100);
+    const fancy = (0, minimax_core_1.terminalSupportsAnsi)();
     // Left column for the model name; lines 2+ are indented to align beneath it.
     const indent = " ".repeat(model.model_name.length + 2);
+    const spinner = fancy ? "⟲" : "resets in:";
     const line1 = `${model.model_name}  3h: ${intervalUsed}%/${100 - intervalUsed}% ${barFor(intervalUsed)}  wk: ${weeklyUsed}%/${100 - weeklyUsed}% ${barFor(weeklyUsed)}`;
-    const line2 = `${indent}⟲ ${formatDuration(model.remains_time)}  (week ⟲ ${formatDuration(model.weekly_remains_time)})`;
+    const line2 = `${indent}${spinner} ${formatDuration(model.remains_time)}  (week ${spinner} ${formatDuration(model.weekly_remains_time)})`;
     return [line1, line2].join("\n");
 }
 async function getHudLine(defaultModel) {
@@ -49,7 +56,7 @@ async function getHudLine(defaultModel) {
         }
         let targetModel;
         if (defaultModel) {
-            targetModel = models.find(m => m.model_name === defaultModel) || models[0];
+            targetModel = models.find((m) => m.model_name === defaultModel) || models[0];
         }
         else {
             targetModel = models[0];

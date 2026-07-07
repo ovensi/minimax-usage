@@ -1,4 +1,8 @@
-import { getConfig, queryTokenUsage } from "./vendor/minimax-core";
+import {
+  getConfig,
+  queryTokenUsage,
+  terminalSupportsAnsi,
+} from "./vendor/minimax-core";
 import type { ModelRemain } from "./vendor/minimax-core";
 
 export interface HudConfig {
@@ -21,7 +25,12 @@ function colorFor(usedPercent: number): string {
 function barFor(usedPercent: number, width: number = 20): string {
   const filled = Math.round((usedPercent / 100) * width);
   const empty = width - filled;
-  return `${colorFor(usedPercent)}${"█".repeat(filled)}${DIM}${"░".repeat(empty)}${RESET}`;
+  if (terminalSupportsAnsi()) {
+    // Fancy: full-block filled, light-shade empty, color-coded by usage.
+    return `${colorFor(usedPercent)}${"█".repeat(filled)}${DIM}${"░".repeat(empty)}${RESET}`;
+  }
+  // Plain ASCII fallback for legacy Windows consoles / pipes / NO_COLOR.
+  return `[${"#".repeat(filled)}${"-".repeat(empty)}]`;
 }
 
 function formatDuration(ms: number): string {
@@ -39,10 +48,12 @@ function formatHudLine(model: ModelRemain): string {
   const intervalUsed = 100 - (model.current_interval_remaining_percent ?? 100);
   const weeklyUsed = 100 - (model.current_weekly_remaining_percent ?? 100);
 
+  const fancy = terminalSupportsAnsi();
   // Left column for the model name; lines 2+ are indented to align beneath it.
   const indent = " ".repeat(model.model_name.length + 2);
+  const spinner = fancy ? "⟲" : "resets in:";
   const line1 = `${model.model_name}  3h: ${intervalUsed}%/${100 - intervalUsed}% ${barFor(intervalUsed)}  wk: ${weeklyUsed}%/${100 - weeklyUsed}% ${barFor(weeklyUsed)}`;
-  const line2 = `${indent}⟲ ${formatDuration(model.remains_time)}  (week ⟲ ${formatDuration(model.weekly_remains_time)})`;
+  const line2 = `${indent}${spinner} ${formatDuration(model.remains_time)}  (week ${spinner} ${formatDuration(model.weekly_remains_time)})`;
   return [line1, line2].join("\n");
 }
 
@@ -58,7 +69,7 @@ export async function getHudLine(defaultModel?: string): Promise<string | null> 
 
     let targetModel: ModelRemain;
     if (defaultModel) {
-      targetModel = models.find(m => m.model_name === defaultModel) || models[0];
+      targetModel = models.find((m) => m.model_name === defaultModel) || models[0];
     } else {
       targetModel = models[0];
     }

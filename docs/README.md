@@ -12,8 +12,23 @@ Query MiniMax token plan usage (used/remaining) for the current billing period.
 
 ### 1. Set API Key
 
+macOS / Linux (zsh / bash):
+
 ```bash
-export MINIMAX_API_KEY='your_minimax_api_key'
+echo 'export MINIMAX_API_KEY="your_minimax_api_key"' >> ~/.zshrc   # or ~/.bashrc
+source ~/.zshrc
+```
+
+Windows PowerShell (persist via `$PROFILE`):
+
+```powershell
+[System.Environment]::SetEnvironmentVariable('MINIMAX_API_KEY', 'your_minimax_api_key', 'User')
+```
+
+Windows cmd.exe:
+
+```cmd
+setx MINIMAX_API_KEY "your_minimax_api_key"
 ```
 
 ### 2. Install Plugin

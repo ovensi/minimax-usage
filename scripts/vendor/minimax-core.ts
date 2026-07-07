@@ -111,3 +111,33 @@ export function getConfig(): MiniMaxConfig {
 
   return { apiKey, apiHost };
 }
+
+/**
+ * Whether the current stdout can render ANSI escape codes + box-drawing
+ * characters without producing garbage. Used by the HUD renderer to decide
+ * between the colored Unicode version and the plain-ASCII fallback.
+ *
+ * Rules:
+ *   1. NO_COLOR set (any value) — disable.
+ *   2. Not a TTY (redirected to a file / pipe) — disable.
+ *   3. On Windows: only enable when we know the host supports VT processing.
+ *      Windows Terminal sets WT_SESSION; VS Code's integrated terminal sets
+ *      TERM_PROGRAM=vscode. Everything else on Windows (legacy cmd.exe,
+ *      PowerShell 5.x without OEM change) is treated as not supporting ANSI
+ *      so we don't ship escape sequences the user will see as `←[31m`.
+ *   4. All other platforms — enable.
+ */
+export function terminalSupportsAnsi(): boolean {
+  if (process.env.NO_COLOR !== undefined && process.env.NO_COLOR !== "") {
+    return false;
+  }
+  if (!process.stdout.isTTY) {
+    return false;
+  }
+  if (process.platform === "win32") {
+    if (process.env.WT_SESSION) return true;
+    if (process.env.TERM_PROGRAM === "vscode") return true;
+    return false;
+  }
+  return true;
+}

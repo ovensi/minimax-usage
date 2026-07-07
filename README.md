@@ -18,8 +18,23 @@ git clone https://gitee.com/github-24306930/minimax-usage.git ~/.claude/plugins/
 
 ### 2. 设置环境变量
 
+macOS / Linux（zsh / bash）：
+
 ```bash
-export MINIMAX_API_KEY='your_minimax_api_key'
+echo 'export MINIMAX_API_KEY="your_minimax_api_key"' >> ~/.zshrc   # 或 ~/.bashrc
+source ~/.zshrc
+```
+
+Windows PowerShell（追加到 `$PROFILE`）：
+
+```powershell
+[System.Environment]::SetEnvironmentVariable('MINIMAX_API_KEY', 'your_minimax_api_key', 'User')
+```
+
+Windows cmd.exe（仅当前会话，重启失效）：
+
+```cmd
+setx MINIMAX_API_KEY "your_minimax_api_key"
 ```
 
 ### 3. 配置 Claude HUD（可选）

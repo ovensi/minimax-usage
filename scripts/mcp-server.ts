@@ -22,10 +22,13 @@ interface McpResponse {
 }
 
 function formatUsageForDisplay(model: ModelRemain): string {
-  const total = model?.current_interval_total_count ?? 0;
-  const remaining = model?.current_interval_usage_count ?? 0;
-  const used = total - remaining;
-  const usagePercent = total === 0 ? "0.0" : ((used / total) * 100).toFixed(1);
+  // The legacy absolute-count fields (`current_interval_total_count` /
+  // `current_interval_usage_count`) now always come back as 0 from the
+  // `/remains` endpoint — the API moved to reporting **remaining**
+  // percentages. Derive "used" from `100 - remaining` so the report stays
+  // meaningful instead of always printing "0 / 0 (0.0%)".
+  const remainingPercent = model?.current_interval_remaining_percent ?? 100;
+  const usedPercent = 100 - remainingPercent;
 
   const startDate = formatDate(model.start_time);
   const endDate = formatDate(model.end_time);
@@ -35,9 +38,9 @@ function formatUsageForDisplay(model: ModelRemain): string {
 Model: ${model.model_name}
 --------------------------------
   Period:         ${startDate} to ${endDate}
-  Quota:          ${total} requests
-  Used:           ${used} requests (${usagePercent}%)
-  Remaining:      ${remaining} requests
+  Quota:          remaining percent (API no longer exposes absolute counts)
+  Used:           ${usedPercent.toFixed(1)}% of interval
+  Remaining:      ${remainingPercent.toFixed(1)}%
   Resets In:      ${timeRemaining}
 `;
 }
